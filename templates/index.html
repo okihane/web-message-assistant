@@ -1,0 +1,70 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>消息助手</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.1.3/css/bootstrap.min.css">
+    <style>
+      .chat {
+        max-height: 500px;
+        overflow-y: scroll;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container mt-4">
+      <h1 class="text-center mb-4">消息助手</h1>
+      <div class="row justify-content-center">
+        <div class="col-8">
+          <div class="card">
+            <div class="card-body chat">
+              <ul id="messages"></ul>
+            </div>
+            <div class="card-footer">
+              <div class="input-group">
+                <input id="message_input" type="text" class="form-control" placeholder="请输入消息...">
+                <button id="send_button" class="btn btn-primary">发送</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.bootcdn.net/ajax/libs/socket.io/4.3.2/socket.io.min.js"></script>
+    <script>
+      var socket = io.connect('http://' + document.domain + ':' + location.port);
+
+      socket.on('connect', function() {
+        console.log('连接服务器成功！');
+      });
+
+      socket.on('disconnect', function() {
+        console.log('与服务器断开连接！');
+      });
+
+      socket.on('message', function(data) {
+        var li = document.createElement('li');
+        li.innerHTML = '<strong>' + data.username + '</strong>: ' + data.message;
+        document.querySelector('#messages').appendChild(li);
+      });
+
+      document.querySelector('#send_button').onclick = function(event) {
+        var message = document.querySelector('#message_input').value;
+        var data = {
+          username: 'Me',
+          message: message
+        };
+        socket.emit('message', data);
+        document.querySelector('#message_input').value = '';
+      };
+
+      document.querySelector('#message_input').onkeyup = function(event) {
+        if (event.keyCode === 13) {
+          document.querySelector('#send_button').click();
+        }
+      };
+    </script>
+  </body>
+</html>
